@@ -414,13 +414,92 @@
         opacity: 0.35;
       }
 
-      .dog-wrapper {
+      .memory-carousel {
+        position: relative;
+        width: 100%;
+        margin: 12px 0 24px;
+        overflow: visible;
+        padding: clamp(6px, 1.5vw, 12px) 0;
+      }
+
+      .memory-track {
+        --memory-gap: clamp(12px, 3vw, 20px);
         display: flex;
-        flex-direction: column;
-        align-items: center;
+        gap: var(--memory-gap);
+        align-items: flex-start;
         justify-content: center;
-        margin-top: 4px;
-        margin-bottom: 12px;
+        position: relative;
+        width: 100%;
+      }
+
+      .memory-track.is-enhanced {
+        --memory-viewport: min(420px, 88vw);
+        --memory-peek-shift: min(58%, 220px);
+        --memory-peek-crop: 46%;
+        width: var(--memory-viewport);
+        margin: 0 auto;
+        min-height: clamp(220px, 45vw, 320px);
+        justify-content: center;
+        align-items: center;
+      }
+
+      .dog-wrapper {
+        flex: 0 0 clamp(160px, 32vw, 220px);
+        display: flex;
+        justify-content: center;
+      }
+
+      .memory-track.is-enhanced .dog-wrapper {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        opacity: 0;
+        transform: translateX(0) scale(0.9);
+        clip-path: inset(0 0 0 0);
+        pointer-events: none;
+        transition:
+          opacity 0.6s ease,
+          transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+          clip-path 0.6s ease;
+      }
+
+      .memory-track.is-enhanced .dog-wrapper.is-active {
+        position: relative;
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        clip-path: inset(0 0 0 0);
+        pointer-events: auto;
+        z-index: 3;
+      }
+
+      .memory-track.is-enhanced .dog-wrapper.is-prev,
+      .memory-track.is-enhanced .dog-wrapper.is-next {
+        opacity: 1;
+        z-index: 2;
+      }
+
+      .memory-track.is-enhanced .dog-wrapper.is-prev {
+        transform: translateX(calc(var(--memory-peek-shift) * -1)) scale(0.94);
+        clip-path: inset(0 0 0 var(--memory-peek-crop));
+      }
+
+      .memory-track.is-enhanced .dog-wrapper.is-next {
+        transform: translateX(var(--memory-peek-shift)) scale(0.94);
+        clip-path: inset(0 var(--memory-peek-crop) 0 0);
+      }
+
+      .memory-track.is-enhanced .dog-wrapper.is-offscreen {
+        opacity: 0;
+        transform: translateX(0) scale(0.82);
+        clip-path: inset(0 0 0 0);
+        z-index: 1;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .memory-track.is-enhanced .dog-wrapper {
+          transition: none;
+        }
       }
 
       .verse {
@@ -432,7 +511,7 @@
       }
 
       .photo-frame {
-        width: 280px;
+        width: 100%;
         border-radius: 28px;
         overflow: hidden;
         border: 4px solid rgba(255, 255, 255, 0.8);
@@ -441,16 +520,18 @@
         opacity: 0;
         animation: photoPop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s forwards;
         background: linear-gradient(135deg, #ffe2c4, #ffd4ea);
-        padding: 10px;
+        padding: 14px;
         box-sizing: border-box;
+        aspect-ratio: 3 / 4;
+        min-height: 280px;
       }
 
       .photo-frame img {
         display: block;
         width: 100%;
-        height: auto;
-        object-fit: contain;
-        border-radius: 20px;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 16px;
         margin-bottom: 0;
       }
 
@@ -552,8 +633,10 @@
           <div class="eyebrow">Research Collection Wrapped!</div>
           <h1>So proud of you mak mak kub</h1>
           <p class="subtitle">
-            มายมอลทีสเก่งมักๆคับ ขอบคุณพระเจ้าที่พระเจ้าให้คนต่างๆมาคอยช่วยในการเก็บวิจัยนี้นะยู แม้ว่าตอนแรกจะดูเกินกำลัง
-            <br>But HE IS ALWAYS ON TIME.✨
+            มายมอลทีสเก่งมักๆคับ<br>
+            ขอบคุณพระเจ้าที่พระเจ้าให้คนต่างๆมาคอยช่วยในการเก็บวิจัยนี้นะยู
+            แม้ว่าตอนแรกจะดูเกินกำลัง<br>
+            But HE IS ALWAYS ON TIME.✨
           </p>
           <section class="lyrics-module" aria-label="Always On Time lyrics moment">
             <div class="lyrics-chip">
@@ -573,11 +656,25 @@
           <p class="verse">
             “นี่แน่ะ เรากำลังทำสิ่งใหม่ๆ บัดนี้ มันงอกขึ้นมา เจ้าไม่เห็นหรือ? และเราจะทำทางในถิ่นทุรกันดาร และแม่น้ำในที่แห้งแล้ง” — อิสยาห์ 43:19
           </p>
-          <div class="dog-wrapper">
-            <div class="photo-frame">
-              <img src="prae-with-golden-min.png" alt="Prae celebrating with her Golden Retriever" loading="lazy">
+          <section class="memory-carousel" aria-label="Prae memories carousel">
+            <div class="memory-track">
+              <div class="dog-wrapper">
+                <div class="photo-frame">
+                  <img src="carousel-1.jpeg" alt="Prae smiling with her dogs" loading="lazy">
+                </div>
+              </div>
+              <div class="dog-wrapper">
+                <div class="photo-frame">
+                  <img src="carousel-2.jpeg" alt="Prae celebrating after collecting research" loading="lazy">
+                </div>
+              </div>
+              <div class="dog-wrapper">
+                <div class="photo-frame">
+                  <img src="carousel-3.jpeg" alt="Prae sharing a joyful moment outdoors" loading="lazy">
+                </div>
+              </div>
             </div>
-          </div>
+          </section>
           <div class="card-footer">
             <p class="signature">Golden Retriever cheers coming your way 🐕✨</p>
             <p class="tiny-note">รักมากนะ มายมอลทีสของเด้นเด้น ❤️</p>
@@ -610,6 +707,94 @@
         var soundtrack = document.getElementById('always-on-time');
         var hasQueuedSoundtrack = false;
         var SOUNDTRACK_START_DELAY = 2000;
+        var memoryCarousel = document.querySelector('.memory-carousel');
+        var memoryTrack = memoryCarousel ? memoryCarousel.querySelector('.memory-track') : null;
+        var memorySlides = memoryTrack ? Array.prototype.slice.call(memoryTrack.querySelectorAll('.dog-wrapper')) : [];
+        var memoryIndex = 0;
+        var memoryTimer = null;
+        var CAROUSEL_INTERVAL = 4200;
+        var reduceMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+        var prefersReducedMotion = !!(reduceMotionQuery && reduceMotionQuery.matches);
+
+        function updateMemorySlides() {
+          if (!memoryTrack || !memorySlides.length) {
+            return;
+          }
+          if (!memoryTrack.classList.contains('is-enhanced')) {
+            memoryTrack.classList.add('is-enhanced');
+          }
+          var prevIndex = (memoryIndex - 1 + memorySlides.length) % memorySlides.length;
+          var nextIndex = (memoryIndex + 1) % memorySlides.length;
+          memorySlides.forEach(function (slide, index) {
+            slide.classList.remove('is-active', 'is-prev', 'is-next', 'is-offscreen');
+            if (index === memoryIndex) {
+              slide.classList.add('is-active');
+              slide.setAttribute('aria-hidden', 'false');
+            } else if (index === prevIndex) {
+              slide.classList.add('is-prev');
+              slide.setAttribute('aria-hidden', 'true');
+            } else if (index === nextIndex) {
+              slide.classList.add('is-next');
+              slide.setAttribute('aria-hidden', 'true');
+            } else {
+              slide.classList.add('is-offscreen');
+              slide.setAttribute('aria-hidden', 'true');
+            }
+          });
+        }
+
+        function stopMemoryCarousel() {
+          if (memoryTimer) {
+            clearInterval(memoryTimer);
+            memoryTimer = null;
+          }
+        }
+
+        function startMemoryCarousel() {
+          if (!memorySlides.length || prefersReducedMotion) {
+            return;
+          }
+          stopMemoryCarousel();
+          memoryTimer = setInterval(function () {
+            memoryIndex = (memoryIndex + 1) % memorySlides.length;
+            updateMemorySlides();
+          }, CAROUSEL_INTERVAL);
+        }
+
+        if (memoryTrack && memorySlides.length) {
+          updateMemorySlides();
+          startMemoryCarousel();
+          if (memoryCarousel) {
+            memoryCarousel.addEventListener('mouseenter', stopMemoryCarousel);
+            memoryCarousel.addEventListener('mouseleave', function () {
+              if (!prefersReducedMotion) {
+                startMemoryCarousel();
+              }
+            });
+            memoryCarousel.addEventListener('focusin', stopMemoryCarousel);
+            memoryCarousel.addEventListener('focusout', function () {
+              if (!prefersReducedMotion) {
+                startMemoryCarousel();
+              }
+            });
+          }
+          if (reduceMotionQuery) {
+            var handleReduceMotionChange = function (event) {
+              prefersReducedMotion = !!event.matches;
+              if (prefersReducedMotion) {
+                stopMemoryCarousel();
+              } else {
+                startMemoryCarousel();
+              }
+            };
+            if (reduceMotionQuery.addEventListener) {
+              reduceMotionQuery.addEventListener('change', handleReduceMotionChange);
+            } else if (reduceMotionQuery.addListener) {
+              reduceMotionQuery.addListener(handleReduceMotionChange);
+            }
+          }
+        }
+
         var lyricLines = [
           { text: 'Jesus', duration: 3000 },
           { text: 'I was tossed in the water', duration: 3300 },
