@@ -679,17 +679,17 @@
             <div class="memory-track">
               <div class="dog-wrapper">
                 <div class="photo-frame">
-                  <img src="carousel-00001.jpeg" alt="Prae memory photo 1" loading="lazy">
+                  <img src="carousel-00001.jpeg" alt="Prae memory photo 1" loading="eager">
                 </div>
               </div>
               <div class="dog-wrapper">
                 <div class="photo-frame">
-                  <img src="carousel-00002.png" alt="Prae memory photo 2" loading="lazy">
+                  <img src="carousel-00002.png" alt="Prae memory photo 2" loading="eager">
                 </div>
               </div>
               <div class="dog-wrapper">
                 <div class="photo-frame">
-                  <img src="carousel-00003.jpeg" alt="Prae memory photo 3" loading="lazy">
+                  <img src="carousel-00003.jpeg" alt="Prae memory photo 3" loading="eager">
                 </div>
               </div>
             </div>
@@ -786,7 +786,7 @@
             var img = document.createElement('img');
             img.src = source;
             img.alt = 'Prae memory photo ' + (index + 1);
-            img.loading = 'lazy';
+            img.loading = 'eager';
             frame.appendChild(img);
           }
           return wrapper;
