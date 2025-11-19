@@ -433,14 +433,16 @@
       }
 
       .memory-track.is-enhanced {
-        --memory-viewport: min(420px, 88vw);
+        --memory-viewport: min(520px, 96vw);
         --memory-peek-shift: min(58%, 220px);
         --memory-peek-crop: 46%;
-        width: var(--memory-viewport);
-        margin: 0 auto;
+        width: 100%;
+        max-width: var(--memory-viewport);
+        margin: 0;
         min-height: clamp(220px, 45vw, 320px);
         justify-content: center;
         align-items: center;
+        padding: 0;
       }
 
       .dog-wrapper {
@@ -462,6 +464,10 @@
           opacity 0.6s ease,
           transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
           clip-path 0.6s ease;
+      }
+
+      .memory-track.is-enhanced .dog-wrapper.is-static {
+        transition: none !important;
       }
 
       .memory-track.is-enhanced .dog-wrapper.is-active {
@@ -491,9 +497,16 @@
 
       .memory-track.is-enhanced .dog-wrapper.is-offscreen {
         opacity: 0;
-        transform: translateX(0) scale(0.82);
-        clip-path: inset(0 0 0 0);
+        transform: translateX(calc(var(--memory-peek-shift) * 2.2)) scale(0.78);
+        clip-path: inset(0 0 0 85%);
         z-index: 1;
+      }
+
+      .memory-track.is-enhanced .dog-wrapper.is-exiting {
+        opacity: 0;
+        transform: translateX(calc(var(--memory-peek-shift) * -1.3)) scale(0.86);
+        clip-path: inset(0 0 0 65%);
+        pointer-events: none;
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -515,7 +528,6 @@
         border-radius: 28px;
         overflow: hidden;
         border: 4px solid rgba(255, 255, 255, 0.8);
-        box-shadow: 0 18px 40px rgba(111, 44, 0, 0.25);
         transform: rotate(-1.5deg) scale(0.96);
         opacity: 0;
         animation: photoPop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s forwards;
@@ -684,7 +696,7 @@
           </section>
           <div class="card-footer">
             <p class="signature">Golden Retriever cheers coming your way 🐕✨</p>
-            <p class="tiny-note">รักมากนะ มายมอลทีสของเด้นเด้น ❤️</p>
+            <p class="tiny-note">รักมากๆคับ มายมอลทีสของเด้นเด้น ❤️</p>
           </div>
         </article>
       </div>
@@ -745,6 +757,7 @@
         var nextMemoryTemplateIndex = 0;
         var memoryTimer = null;
         var CAROUSEL_INTERVAL = 4200;
+        var MEMORY_EXIT_DURATION = 640;
         var reduceMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
         var prefersReducedMotion = !!(reduceMotionQuery && reduceMotionQuery.matches);
 
@@ -824,6 +837,41 @@
           return clone;
         }
 
+        function setMemorySlideState(slide, state) {
+          if (!slide) {
+            return;
+          }
+          var disableTransition = !slide.dataset.memoryReady;
+          if (disableTransition) {
+            slide.classList.add('is-static');
+          }
+          slide.classList.remove('is-active', 'is-prev', 'is-next', 'is-offscreen', 'is-exiting');
+          if (state) {
+            slide.classList.add(state);
+          }
+          slide.setAttribute('aria-hidden', state === 'is-active' ? 'false' : 'true');
+          if (disableTransition) {
+            // Force reflow before re-enabling transitions
+            void slide.offsetWidth;
+            slide.classList.remove('is-static');
+            slide.dataset.memoryReady = 'true';
+          }
+        }
+
+        function scheduleMemoryRemoval(slide) {
+          if (!slide) {
+            return;
+          }
+          slide.classList.remove('is-active', 'is-prev', 'is-next', 'is-offscreen');
+          slide.classList.add('is-exiting');
+          slide.setAttribute('aria-hidden', 'true');
+          window.setTimeout(function () {
+            if (slide && slide.parentNode === memoryTrack) {
+              memoryTrack.removeChild(slide);
+            }
+          }, MEMORY_EXIT_DURATION);
+        }
+
         function applyMemoryClasses() {
           if (!memoryQueue.length || !memoryTrack) {
             return;
@@ -832,17 +880,14 @@
             memoryTrack.classList.add('is-enhanced');
           }
           memoryQueue.forEach(function (slide, index) {
-            slide.classList.remove('is-active', 'is-prev', 'is-next', 'is-offscreen');
-            slide.setAttribute('aria-hidden', 'true');
             if (index === 0) {
-              slide.classList.add('is-prev');
+              setMemorySlideState(slide, 'is-prev');
             } else if (index === 1) {
-              slide.classList.add('is-active');
-              slide.setAttribute('aria-hidden', 'false');
+              setMemorySlideState(slide, 'is-active');
             } else if (index === 2) {
-              slide.classList.add('is-next');
+              setMemorySlideState(slide, 'is-next');
             } else {
-              slide.classList.add('is-offscreen');
+              setMemorySlideState(slide, 'is-offscreen');
             }
           });
         }
@@ -858,12 +903,10 @@
             return;
           }
           var outgoing = memoryQueue.shift();
-          if (outgoing && outgoing.parentNode === memoryTrack) {
-            memoryTrack.removeChild(outgoing);
-          }
           appendNextMemorySlide();
           applyMemoryClasses();
           ensureActiveMemoryMedia();
+          scheduleMemoryRemoval(outgoing);
         }
 
         function stopMemoryCarousel() {
