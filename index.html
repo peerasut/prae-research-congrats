@@ -323,11 +323,9 @@
         z-index: 1;
         margin-top: 14px;
         min-height: 96px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
         padding: 8px 4px;
+        text-align: center;
+        overflow: hidden;
       }
 
       .lyrics-window::before {
@@ -340,6 +338,12 @@
       }
 
       .lyrics-line {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 8px;
         font-size: 1.35rem;
         font-weight: 600;
         margin: 0;
@@ -351,11 +355,20 @@
         transition:
           opacity 0.6s ease,
           transform 0.6s cubic-bezier(0.34, 1.4, 0.64, 1);
+        pointer-events: none;
       }
 
       .lyrics-line.is-visible {
         opacity: 1;
         transform: translateY(0) scale(1);
+      }
+
+      .lyrics-line.is-fading-out {
+        opacity: 0;
+        transform: translateY(-18px) scale(0.95);
+        transition:
+          opacity 0.55s ease,
+          transform 0.55s cubic-bezier(0.34, 0.95, 0.64, 1);
       }
 
       .lyrics-line span {
@@ -545,11 +558,14 @@
           <section class="lyrics-module" aria-label="Always On Time lyrics moment">
             <div class="lyrics-chip">
               <span class="lyrics-chip-title">Always On Time</span>
-              <span class="lyrics-status" id="lyrics-status">Tap to reveal</span>
+              <span class="lyrics-status" id="lyrics-status">Live lyrics</span>
             </div>
-            <div class="lyrics-window">
-              <p class="lyrics-line is-visible" id="lyrics-line" aria-live="polite">
-                <span id="lyrics-line-text">Jesus</span>
+            <div class="lyrics-window" aria-live="polite">
+              <p class="lyrics-line is-visible" data-line-slot="0">
+                <span>Jesus</span>
+              </p>
+              <p class="lyrics-line" data-line-slot="1" aria-hidden="true">
+                <span></span>
               </p>
             </div>
             <div class="lyrics-progress" id="lyrics-progress" aria-hidden="true"></div>
@@ -606,8 +622,9 @@
           { text: 'You were always, always, always on time', duration: 8500 },
           { text: 'And You were always, always, always on time', duration: 8500 }
         ];
-        var lyricActiveLine = document.getElementById('lyrics-line');
-        var lyricActiveText = document.getElementById('lyrics-line-text');
+        var lyricWindow = document.querySelector('.lyrics-window');
+        var lyricLineNodes = lyricWindow ? Array.prototype.slice.call(lyricWindow.querySelectorAll('.lyrics-line')) : [];
+        var lyricDisplayIndex = 0;
         var lyricStatus = document.getElementById('lyrics-status');
         var lyricProgress = document.getElementById('lyrics-progress');
         var lyricModule = document.querySelector('.lyrics-module');
@@ -615,6 +632,41 @@
         var lyricTimeout = null;
         var lyricBars = [];
         var lyricStarted = false;
+
+        function getActiveLyricNode() {
+          return lyricLineNodes[lyricDisplayIndex] || null;
+        }
+
+        function getInactiveLyricNode() {
+          if (!lyricLineNodes.length) {
+            return null;
+          }
+          var nextIndex = (lyricDisplayIndex + 1) % lyricLineNodes.length;
+          return lyricLineNodes[nextIndex] || null;
+        }
+
+        function setLyricContent(node, text) {
+          if (!node) {
+            return;
+          }
+          var span = node.querySelector('span');
+          if (span) {
+            span.textContent = text || '';
+          }
+        }
+
+        function resetLyricNode(node) {
+          if (!node) {
+            return;
+          }
+          if (node._fadeTimer) {
+            clearTimeout(node._fadeTimer);
+            node._fadeTimer = null;
+          }
+          node.classList.remove('is-visible', 'is-fading-out');
+          node.setAttribute('aria-hidden', 'true');
+          setLyricContent(node, '');
+        }
 
         function buildLyricProgress() {
           if (!lyricProgress) {
@@ -657,21 +709,54 @@
         }
 
         function updateLyricLine(nextIndex, animate, shouldUpdateProgress) {
-          if (!lyricActiveLine || !lyricActiveText) {
+          if (!lyricLineNodes.length) {
             return;
           }
-          if (animate) {
-            lyricActiveLine.classList.remove('is-visible');
-            void lyricActiveLine.offsetWidth;
+          var targetLine = lyricLines[nextIndex] || lyricLines[0];
+          if (!targetLine) {
+            return;
           }
-          var currentLine = lyricLines[nextIndex] || lyricLines[0];
-          lyricActiveText.textContent = currentLine ? currentLine.text : '';
-          if (animate) {
-            requestAnimationFrame(function () {
-              lyricActiveLine.classList.add('is-visible');
-            });
+          if (!animate) {
+            var initialNode = getActiveLyricNode() || lyricLineNodes[0];
+            if (initialNode) {
+              setLyricContent(initialNode, targetLine.text);
+              initialNode.classList.add('is-visible');
+              initialNode.setAttribute('aria-hidden', 'false');
+            }
+            var otherNode = getInactiveLyricNode();
+            resetLyricNode(otherNode);
           } else {
-            lyricActiveLine.classList.add('is-visible');
+            var outgoing = getActiveLyricNode();
+            var incoming = getInactiveLyricNode();
+            if (!incoming) {
+              return;
+            }
+            if (incoming._fadeTimer) {
+              clearTimeout(incoming._fadeTimer);
+              incoming._fadeTimer = null;
+            }
+            setLyricContent(incoming, targetLine.text);
+            incoming.classList.remove('is-visible', 'is-fading-out');
+            incoming.setAttribute('aria-hidden', 'false');
+            if (outgoing) {
+              if (outgoing._fadeTimer) {
+                clearTimeout(outgoing._fadeTimer);
+                outgoing._fadeTimer = null;
+              }
+              outgoing.classList.remove('is-fading-out');
+              outgoing.classList.remove('is-visible');
+              outgoing.classList.add('is-fading-out');
+              outgoing.setAttribute('aria-hidden', 'true');
+              outgoing._fadeTimer = window.setTimeout(function () {
+                outgoing.classList.remove('is-fading-out');
+                setLyricContent(outgoing, '');
+                outgoing._fadeTimer = null;
+              }, 620);
+            }
+            requestAnimationFrame(function () {
+              incoming.classList.add('is-visible');
+            });
+            lyricDisplayIndex = (lyricDisplayIndex + 1) % lyricLineNodes.length;
           }
           if (shouldUpdateProgress) {
             updateLyricProgress(nextIndex);
@@ -692,22 +777,36 @@
         }
 
         function startLyricLoop() {
-          if (lyricStarted || !lyricActiveLine || !lyricActiveText) {
+          if (lyricStarted || !lyricLineNodes.length) {
             return;
           }
           lyricStarted = true;
           updateLyricLine(lyricIndex, true, true);
           if (lyricStatus) {
-            lyricStatus.textContent = 'Live lyrics';
             lyricStatus.classList.add('is-live');
           }
           queueNextLyric();
         }
 
+        function restartLyricLoop() {
+          if (!lyricStarted || !lyricLineNodes.length) {
+            return;
+          }
+          if (lyricTimeout) {
+            clearTimeout(lyricTimeout);
+            lyricTimeout = null;
+          }
+          lyricIndex = 0;
+          updateLyricLine(lyricIndex, true, true);
+          queueNextLyric();
+        }
+
         buildLyricProgress();
         updateLyricLine(lyricIndex, false, false);
-        if (lyricModule) {
-          lyricModule.addEventListener('click', startLyricLoop);
+        if (soundtrack) {
+          soundtrack.addEventListener('ended', function () {
+            restartLyricLoop();
+          });
         }
 
         function revealScene() {
