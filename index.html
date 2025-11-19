@@ -198,6 +198,30 @@
         animation: cardFloat 3s ease-in-out 1s infinite;
       }
 
+      @keyframes lyricGlow {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.55;
+        }
+        50% {
+          transform: scale(1.05);
+          opacity: 0.9;
+        }
+      }
+
+      @keyframes lyricShimmer {
+        0% {
+          filter: hue-rotate(0deg);
+        }
+        50% {
+          filter: hue-rotate(26deg);
+        }
+        100% {
+          filter: hue-rotate(0deg);
+        }
+      }
+
       .card {
         background: rgba(255, 255, 255, 0.96);
         border-radius: 28px;
@@ -233,6 +257,148 @@
         color: #5c4033;
         line-height: 1.55;
         font-weight: 300;
+      }
+
+      .lyrics-module {
+        margin: 22px 0;
+        padding: 18px 20px 16px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.75);
+        box-shadow: 0 12px 35px rgba(238, 167, 114, 0.35);
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+      }
+
+      .lyrics-module::before,
+      .lyrics-module::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      .lyrics-module::before {
+        background: radial-gradient(circle at 20% 20%, rgba(255, 201, 155, 0.85), transparent 55%);
+        animation: lyricGlow 10s ease-in-out infinite;
+      }
+
+      .lyrics-module::after {
+        background: radial-gradient(circle at 80% 0%, rgba(255, 177, 213, 0.75), transparent 55%);
+        mix-blend-mode: screen;
+        animation: lyricGlow 12s ease-in-out 1s infinite;
+      }
+
+      .lyrics-chip {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.2em;
+        color: #c7773c;
+      }
+
+      .lyrics-chip-title {
+        font-weight: 600;
+      }
+
+      .lyrics-status {
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        color: #cf936e;
+        transition: color 0.3s ease;
+      }
+
+      .lyrics-status.is-live {
+        color: #d1307f;
+      }
+
+      .lyrics-window {
+        position: relative;
+        z-index: 1;
+        margin-top: 14px;
+        min-height: 96px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 8px 4px;
+      }
+
+      .lyrics-window::before {
+        content: '';
+        position: absolute;
+        inset: 18%;
+        background: rgba(255, 255, 255, 0.4);
+        filter: blur(22px);
+        z-index: -1;
+      }
+
+      .lyrics-line {
+        font-size: 1.35rem;
+        font-weight: 600;
+        margin: 0;
+        color: #6f2f00;
+        letter-spacing: 0.04em;
+        text-transform: none;
+        opacity: 0;
+        transform: translateY(24px) scale(0.96);
+        transition:
+          opacity 0.6s ease,
+          transform 0.6s cubic-bezier(0.34, 1.4, 0.64, 1);
+      }
+
+      .lyrics-line.is-visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      .lyrics-line span {
+        display: inline-block;
+        background: linear-gradient(120deg, #d07519, #d93989);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: lyricShimmer 5s ease-in-out infinite;
+      }
+
+      .lyrics-progress {
+        position: relative;
+        z-index: 1;
+        margin-top: 18px;
+        display: flex;
+        gap: 6px;
+      }
+
+      .lyrics-progress span {
+        flex: 1;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.48);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .lyrics-progress span::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, #f0a646, #f468af);
+        transform-origin: left;
+        transform: scaleX(0);
+        transition: transform var(--progress-duration, 3600ms) linear;
+      }
+
+      .lyrics-progress span.is-active::after {
+        transform: scaleX(1);
+      }
+
+      .lyrics-progress span.is-complete {
+        opacity: 0.35;
       }
 
       .dog-wrapper {
@@ -371,10 +537,23 @@
       <div class="card-orbit">
         <article class="card">
           <div class="eyebrow">Research Collection Wrapped!</div>
-          <h1>So proud of you mak mak kub 🥹</h1>
+          <h1>So proud of you mak mak kub</h1>
           <p class="subtitle">
-            มายมอลทีสเก่งมักๆคับ ขอบคุณพระเจ้าที่พระเจ้าให้คนต่างๆมาคอยช่วยในการเก็บวิจัยนี้นะยู แม้ว่าตอนแรกจะดูเกินกำลัง<br>But He's always on time.<br>เราเห็นสิ่งต่างๆที่พระเจ้าทรงทำผ่านชีวิตของเรา 🙏✨
+            มายมอลทีสเก่งมักๆคับ ขอบคุณพระเจ้าที่พระเจ้าให้คนต่างๆมาคอยช่วยในการเก็บวิจัยนี้นะยู แม้ว่าตอนแรกจะดูเกินกำลัง
+            <br>But HE IS ALWAYS ON TIME.✨
           </p>
+          <section class="lyrics-module" aria-label="Always On Time lyrics moment">
+            <div class="lyrics-chip">
+              <span class="lyrics-chip-title">Always On Time</span>
+              <span class="lyrics-status" id="lyrics-status">Tap to reveal</span>
+            </div>
+            <div class="lyrics-window">
+              <p class="lyrics-line is-visible" id="lyrics-line" aria-live="polite">
+                <span id="lyrics-line-text">Jesus</span>
+              </p>
+            </div>
+            <div class="lyrics-progress" id="lyrics-progress" aria-hidden="true"></div>
+          </section>
           <p class="verse">
             “นี่แน่ะ เรากำลังทำสิ่งใหม่ๆ บัดนี้ มันงอกขึ้นมา เจ้าไม่เห็นหรือ? และเราจะทำทางในถิ่นทุรกันดาร และแม่น้ำในที่แห้งแล้ง” — อิสยาห์ 43:19
           </p>
@@ -414,6 +593,122 @@
         var scene = document.querySelector('.scene');
         var soundtrack = document.getElementById('always-on-time');
         var hasQueuedSoundtrack = false;
+        var SOUNDTRACK_START_DELAY = 2000;
+        var lyricLines = [
+          { text: 'Jesus', duration: 3000 },
+          { text: 'I was tossed in the water', duration: 3300 },
+          { text: 'But I never went under', duration: 3000 },
+          { text: 'You were always on time', duration: 5000 },
+          { text: 'Jesus', duration: 3000 },
+          { text: 'When I went through the fire', duration: 3300 },
+          { text: 'You were right there beside me', duration: 3000 },
+          { text: 'You were always on time', duration: 5000 },
+          { text: 'You were always, always, always on time', duration: 8500 },
+          { text: 'And You were always, always, always on time', duration: 8500 }
+        ];
+        var lyricActiveLine = document.getElementById('lyrics-line');
+        var lyricActiveText = document.getElementById('lyrics-line-text');
+        var lyricStatus = document.getElementById('lyrics-status');
+        var lyricProgress = document.getElementById('lyrics-progress');
+        var lyricModule = document.querySelector('.lyrics-module');
+        var lyricIndex = 0;
+        var lyricTimeout = null;
+        var lyricBars = [];
+        var lyricStarted = false;
+
+        function buildLyricProgress() {
+          if (!lyricProgress) {
+            return;
+          }
+          lyricProgress.innerHTML = '';
+          lyricLines.forEach(function (line, idx) {
+            var bar = document.createElement('span');
+            bar.setAttribute('data-index', idx);
+            var duration = (line && line.duration) || 3200;
+            bar.style.setProperty('--progress-duration', duration + 'ms');
+            lyricProgress.appendChild(bar);
+          });
+          lyricBars = Array.prototype.slice.call(lyricProgress.querySelectorAll('span'));
+        }
+
+        function updateLyricProgress(activeIndex) {
+          if (!lyricBars.length) {
+            buildLyricProgress();
+          }
+          if (!lyricBars.length) {
+            return;
+          }
+          lyricBars.forEach(function (bar, idx) {
+            if (activeIndex === 0) {
+              bar.classList.remove('is-complete');
+            } else if (idx < activeIndex) {
+              bar.classList.add('is-complete');
+            } else {
+              bar.classList.remove('is-complete');
+            }
+            if (idx === activeIndex) {
+              bar.classList.remove('is-active');
+              void bar.offsetWidth;
+              bar.classList.add('is-active');
+            } else {
+              bar.classList.remove('is-active');
+            }
+          });
+        }
+
+        function updateLyricLine(nextIndex, animate, shouldUpdateProgress) {
+          if (!lyricActiveLine || !lyricActiveText) {
+            return;
+          }
+          if (animate) {
+            lyricActiveLine.classList.remove('is-visible');
+            void lyricActiveLine.offsetWidth;
+          }
+          var currentLine = lyricLines[nextIndex] || lyricLines[0];
+          lyricActiveText.textContent = currentLine ? currentLine.text : '';
+          if (animate) {
+            requestAnimationFrame(function () {
+              lyricActiveLine.classList.add('is-visible');
+            });
+          } else {
+            lyricActiveLine.classList.add('is-visible');
+          }
+          if (shouldUpdateProgress) {
+            updateLyricProgress(nextIndex);
+          }
+        }
+
+        function queueNextLyric() {
+          if (lyricTimeout) {
+            clearTimeout(lyricTimeout);
+          }
+          var line = lyricLines[lyricIndex] || lyricLines[0];
+          var duration = (line && line.duration) || 3200;
+          lyricTimeout = setTimeout(function () {
+            lyricIndex = (lyricIndex + 1) % lyricLines.length;
+            updateLyricLine(lyricIndex, true, true);
+            queueNextLyric();
+          }, duration);
+        }
+
+        function startLyricLoop() {
+          if (lyricStarted || !lyricActiveLine || !lyricActiveText) {
+            return;
+          }
+          lyricStarted = true;
+          updateLyricLine(lyricIndex, true, true);
+          if (lyricStatus) {
+            lyricStatus.textContent = 'Live lyrics';
+            lyricStatus.classList.add('is-live');
+          }
+          queueNextLyric();
+        }
+
+        buildLyricProgress();
+        updateLyricLine(lyricIndex, false, false);
+        if (lyricModule) {
+          lyricModule.addEventListener('click', startLyricLoop);
+        }
 
         function revealScene() {
           if (introOverlay) {
@@ -426,7 +721,7 @@
           if (soundtrack && !hasQueuedSoundtrack) {
             hasQueuedSoundtrack = true;
             setTimeout(function () {
-              // Start the soundtrack 3 seconds after the reveal tap
+              // Start the soundtrack after the reveal tap with the shared delay
               soundtrack.muted = false;
               var playAttempt = soundtrack.play();
               if (playAttempt && playAttempt.catch) {
@@ -434,12 +729,16 @@
                   // Ignore play errors if additional gestures are required
                 });
               }
-            }, 2000);
+            }, SOUNDTRACK_START_DELAY);
           }
+          setTimeout(startLyricLoop, SOUNDTRACK_START_DELAY);
         }
 
         if (introButton) {
           introButton.addEventListener('click', revealScene);
+        }
+        if (!introOverlay) {
+          startLyricLoop();
         }
       })();
     </script>
