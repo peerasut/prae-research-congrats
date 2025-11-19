@@ -40,7 +40,7 @@
         animation: sceneRise 0.9s cubic-bezier(0.16, 0.84, 0.44, 1) 0.05s forwards;
         filter: blur(0);
         transition:
-          filter 1.25s cubic-bezier(0.19, 1, 0.22, 1),
+          filter 5s cubic-bezier(0.19, 1, 0.22, 1),
           opacity 0.6s ease;
       }
 
@@ -413,6 +413,7 @@
         var introOverlay = document.getElementById('intro-overlay');
         var scene = document.querySelector('.scene');
         var soundtrack = document.getElementById('always-on-time');
+        var hasQueuedSoundtrack = false;
 
         function revealScene() {
           if (introOverlay) {
@@ -422,14 +423,18 @@
             scene.classList.remove('is-blurred');
             scene.classList.add('is-revealed');
           }
-          if (soundtrack) {
-            soundtrack.muted = false;
-            var playAttempt = soundtrack.play();
-            if (playAttempt && playAttempt.catch) {
-              playAttempt.catch(function () {
-                // Ignore play errors if additional gestures are required
-              });
-            }
+          if (soundtrack && !hasQueuedSoundtrack) {
+            hasQueuedSoundtrack = true;
+            setTimeout(function () {
+              // Start the soundtrack 3 seconds after the reveal tap
+              soundtrack.muted = false;
+              var playAttempt = soundtrack.play();
+              if (playAttempt && playAttempt.catch) {
+                playAttempt.catch(function () {
+                  // Ignore play errors if additional gestures are required
+                });
+              }
+            }, 2000);
           }
         }
 
